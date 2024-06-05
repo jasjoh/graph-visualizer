@@ -1,0 +1,23 @@
+body {
+  font-family: Arial, sans-serif;
+}
+
+#graph-container {
+  width: 800px;
+  height: 600px;
+  border: 1px solid #ccc;
+  margin: 20px;
+}
+
+.circle-outer {
+  fill: #69b3a2;
+}
+
+.circle-inner {
+  fill: #dfe223;
+}
+
+.circle-text {
+  font-size: .6em;
+  fill: white;
+}
