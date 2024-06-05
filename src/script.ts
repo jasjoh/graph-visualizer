@@ -179,7 +179,7 @@ class GraphNode {
    * Throws an error if a specific neighbor is provided and doesn't exist
    */
   private _removeAllNeighbors() {
-    this.graphNeighbors === null;
+    this.graphNeighbors = [];
   }
 
   /** Adds this GraphNode to a graph.
@@ -192,7 +192,7 @@ class GraphNode {
     if (!graph.isNodeInGraph(this)) {
       graph.addNode(
         this,
-        this.removeNeighbor
+        this.removeNeighbor.bind(this)
       );
     }
   }
