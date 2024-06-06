@@ -10,5 +10,9 @@
   "license": "ISC",
   "devDependencies": {
     "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0"
   }
 }
