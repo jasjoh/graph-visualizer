@@ -38,11 +38,11 @@ export namespace MyGraph {
    * Keeps track of an assigned node IDs (as needed)
    */
   namespace Global {
-    export let nodes: GraphNode[] = [];
+    export let nodes: Set<GraphNode> = new Set<GraphNode>;
     let lastNodeIdNumberAssigned: number | null = null;
 
     export function isNodeIdTaken(id: string): boolean {
-      if (nodes.length === 0) { return false; }
+      if (nodes.size === 0) { return false; }
       for (let node of nodes) {
         if (node.id === id) {
           return true;
@@ -110,13 +110,25 @@ export namespace MyGraph {
       }
 
       const nodeIndex = this.nodes.findIndex(gmn => {
-        return gmn.node.id === node.id;
+        return gmn.node === node;
       });
 
       this.nodes.splice(nodeIndex, 1);
       this._removeNeighbors(node);
 
       if (node.graph === this) { node.removeFromGraph(this); }
+    }
+
+    getNodeLocation(node: GraphNode) : GraphMemberLoc {
+      if (!this.isNodeInGraph(node)) {
+        throw new Error("Node is not part of this graph.");
+      }
+
+      const gmn = this.nodes.find(gmn => {
+        return gmn.node === node;
+      });
+
+      return gmn.location;
     }
   }
 

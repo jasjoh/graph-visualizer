@@ -13,10 +13,10 @@ export var MyGraph;
      */
     let Global;
     (function (Global) {
-        Global.nodes = [];
+        Global.nodes = new Set;
         let lastNodeIdNumberAssigned = null;
         function isNodeIdTaken(id) {
-            if (Global.nodes.length === 0) {
+            if (Global.nodes.size === 0) {
                 return false;
             }
             for (let node of Global.nodes) {
@@ -79,13 +79,22 @@ export var MyGraph;
                 throw new Error("Node is not part of this graph.");
             }
             const nodeIndex = this.nodes.findIndex(gmn => {
-                return gmn.node.id === node.id;
+                return gmn.node === node;
             });
             this.nodes.splice(nodeIndex, 1);
             this._removeNeighbors(node);
             if (node.graph === this) {
                 node.removeFromGraph(this);
             }
+        }
+        getNodeLocation(node) {
+            if (!this.isNodeInGraph(node)) {
+                throw new Error("Node is not part of this graph.");
+            }
+            const gmn = this.nodes.find(gmn => {
+                return gmn.node === node;
+            });
+            return gmn.location;
         }
     }
     MyGraph.Graph = Graph;
