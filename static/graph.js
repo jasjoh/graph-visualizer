@@ -105,6 +105,7 @@ export var MyGraph;
     class GraphNode {
         constructor(id, graph, graphNeighbors) {
             this.id = this._validateAndReturnId(id);
+            Global.nodes.add(this);
             this.graph = null;
             if (graph !== undefined) {
                 this.addToGraph(graph);

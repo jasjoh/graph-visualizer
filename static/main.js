@@ -1,16 +1,15 @@
 import { MyGraph } from "./graph.js";
 import { MySvg } from "./view.js";
 document.addEventListener('DOMContentLoaded', main);
-document.getElementById('newGraphBtn').addEventListener('click', newGraph);
 function main() {
-    MySvg.initializeSvg();
     const graph = new MyGraph.Graph();
     testFillGraph(graph);
-    MySvg.renderGraph(graph);
+    MySvg.initializeSvg(graph);
+    MySvg.renderGraph();
 }
 function newGraph() {
     const graph = new MyGraph.Graph();
-    MySvg.renderGraph(graph);
+    MySvg.renderGraph();
 }
 function testFillGraph(graph) {
     const nodeOne = new MyGraph.GraphNode();

@@ -1,5 +1,6 @@
-import * as d3 from 'https://unpkg.com/d3?module'
-// import * as d3 from 'd3';
+// import * as d3 from 'https://unpkg.com/d3?module'
+import * as d3 from 'd3';
+import { MyGraph } from './graph.js';
 export var MySvg;
 (function (MySvg) {
     const nodeRadius = 10;
@@ -8,17 +9,21 @@ export var MySvg;
     const edgeWidth = 3;
     let container = null;
     let svg = null;
-    function initializeSvg() {
+    let graph = null;
+    function initializeSvg(graphToUse) {
+        graph = graphToUse;
         container = d3.select("#graph-container");
+        container.selectAll("*").remove();
         svg = container.append("svg")
             .attr("width", 800)
             .attr("height", 600);
+        svg.on('pointerdown', handleClick);
     }
     MySvg.initializeSvg = initializeSvg;
-    function renderGraph(graph) {
+    function renderGraph() {
         // remove all existing elements
         svg.selectAll("*").remove();
-        const allNeighbors = createEdgeCoords(graph);
+        const allNeighbors = createEdgeCoords();
         console.log();
         // add edges
         svg.selectAll(".edge")
@@ -42,7 +47,13 @@ export var MySvg;
             .style("fill", nodeFillColor);
     }
     MySvg.renderGraph = renderGraph;
-    function createEdgeCoords(graph) {
+    function handleClick(event) {
+        const [x, y] = d3.pointer(event);
+        const node = new MyGraph.GraphNode;
+        graph.addNode(node, node.removeNeighbor, { x: x, y: y });
+        renderGraph();
+    }
+    function createEdgeCoords() {
         const allNeighbors = [];
         for (let gmn of graph.nodes) {
             for (let neighbor of gmn.node.graphNeighbors) {

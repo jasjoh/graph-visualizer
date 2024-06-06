@@ -143,6 +143,7 @@ export namespace MyGraph {
 
     constructor(id?: string, graph?: Graph, graphNeighbors?: GraphNeighbor[]) {
       this.id = this._validateAndReturnId(id);
+      Global.nodes.add(this);
       this.graph = null;
       if (graph !== undefined) { this.addToGraph(graph); };
       this.graphNeighbors = graphNeighbors === undefined ? [] : graphNeighbors;

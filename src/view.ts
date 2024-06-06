@@ -20,20 +20,25 @@ export namespace MySvg {
 
   let container = null;
   let svg = null;
+  let graph : MyGraph.Graph | null = null;
 
-  export function initializeSvg() {
+  export function initializeSvg(graphToUse: MyGraph.Graph) {
+    graph = graphToUse;
     container = d3.select("#graph-container");
+    container.selectAll("*").remove();
     svg = container.append("svg")
     .attr("width", 800)
     .attr("height", 600);
+
+    svg.on('pointerdown', handleClick);
   }
 
-  export function renderGraph(graph: MyGraph.Graph) : void {
+  export function renderGraph() : void {
 
     // remove all existing elements
     svg.selectAll("*").remove();
 
-    const allNeighbors = createEdgeCoords(graph);
+    const allNeighbors = createEdgeCoords();
     console.log()
 
     // add edges
@@ -60,7 +65,14 @@ export namespace MySvg {
 
   }
 
-  function createEdgeCoords(graph: MyGraph.Graph) : EdgeCoordinates[] {
+  function handleClick(event: PointerEvent) {
+    const [x, y] = d3.pointer(event);
+    const node = new MyGraph.GraphNode;
+    graph.addNode( node, node.removeNeighbor, { x: x, y: y });
+    renderGraph();
+  }
+
+  function createEdgeCoords() : EdgeCoordinates[] {
     const allNeighbors : EdgeCoordinates[] = [];
     for (let gmn of graph.nodes) {
       for (let neighbor of gmn.node.graphNeighbors) {
