@@ -1,7 +1,6 @@
-// import * as d3 from 'https://unpkg.com/d3?module'
+import { select as d3select, pointer as d3pointer } from 'd3';
 
-import * as d3 from 'd3';
-import { MyGraph } from './graph.js';
+import { MyGraph } from './graph';
 
 export namespace MySvg {
 
@@ -18,13 +17,14 @@ export namespace MySvg {
   const edgeStrokeColor = 'black';
   const edgeWidth = 3;
 
+  let d3 = undefined;
   let container = null;
   let svg = null;
   let graph : MyGraph.Graph | null = null;
 
   export function initializeSvg(graphToUse: MyGraph.Graph) {
     graph = graphToUse;
-    container = d3.select("#graph-container");
+    container = d3select("#graph-container");
     container.selectAll("*").remove();
     svg = container.append("svg")
     .attr("width", 800)
@@ -66,7 +66,7 @@ export namespace MySvg {
   }
 
   function handleClick(event: PointerEvent) {
-    const [x, y] = d3.pointer(event);
+    const [x, y] = d3pointer(event);
     const node = new MyGraph.GraphNode;
     graph.addNode( node, node.removeNeighbor, { x: x, y: y });
     renderGraph();

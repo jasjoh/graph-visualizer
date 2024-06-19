@@ -1,10 +1,26 @@
 {
     "compilerOptions": {
-      "target": "es6",
+      "target": "ESNext",
       "lib": ["dom", "es2016"],
-      "outDir": "./static",
+      "outDir": "./dist",
       "rootDir": "./src",
-      "module": "es6",
-      "moduleResolution": "node"
-    }
+      "module": "ESNext",
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "skipLibCheck": true
+    },
+    "include": ["src"]
 }
+
+// {
+//   "compilerOptions": {
+//     "target": "es5",
+//     "module": "commonjs",
+//     "strict": true,
+//     "esModuleInterop": true,
+//     "skipLibCheck": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "outDir": "./dist"
+//   },
+//   "include": ["src/**/*"]
+// }

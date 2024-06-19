@@ -1,5 +1,5 @@
-import { MyGraph } from "./graph.js";
-import { MySvg } from "./view.js";
+import { MyGraph } from "./graph";
+import { MySvg } from "./view";
 
 document.addEventListener('DOMContentLoaded', main);
 
