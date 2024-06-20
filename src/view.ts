@@ -1,5 +1,6 @@
 import { select as d3select, pointer as d3pointer } from 'd3';
-import { MyGraph } from './graph';
+import { point as turfPoint, circle as turfCircle, booleanPointInPolygon as turfInCircle } from '@turf/turf';
+import * as MyGraph from './graph';
 
 export interface EdgeCoordinates {
   nodeOneX: number;
@@ -17,18 +18,31 @@ const edgeWidth = 3;
 let container : d3.Selection<HTMLElement, any, any, any>;
 let svg : d3.Selection<SVGSVGElement, any, any, any>;
 let graph : MyGraph.Graph | null = null;
-let selectedElements : MyGraph.GraphNode[] = [];
+let selectedNodes : MyGraph.GraphMemberNode[] = [];
+let edgeInputs : {
+  direction: HTMLInputElement,
+  weight: HTMLInputElement
+};
 
+
+// call on document load to initialize control handlers and initial graph
 export function initializeOnMount(graphToUse: MyGraph.Graph) {
   _initializeControls();
   _initializeSvg(graphToUse);
 }
 
+// initialize controls
 function _initializeControls() {
   const controlsDiv = document.getElementById('controls');
   controlsDiv.addEventListener('click', _handleControlsClick);
+
+  edgeInputs = {
+    direction: document.getElementById('edgeDirection') as HTMLInputElement,
+    weight: document.getElementById('edgeWeight') as HTMLInputElement
+  }
 }
 
+// initialize the SVG with a graph instance
 function _initializeSvg(graphToUse: MyGraph.Graph) {
   graph = graphToUse;
   container = d3select("#graph-container");
@@ -40,13 +54,13 @@ function _initializeSvg(graphToUse: MyGraph.Graph) {
   svg.on('pointerdown', _handleSvgClick);
 }
 
+// re-render the graph in the SVG
 export function renderGraph() : void {
 
   // remove all existing elements
   svg.selectAll("*").remove();
 
   const allNeighbors = createEdgeCoords();
-  console.log()
 
   // add edges
   svg.selectAll(".edge")
@@ -72,22 +86,47 @@ export function renderGraph() : void {
 
 }
 
+// handle all mouse clicks within the SVG
 function _handleSvgClick(event: PointerEvent) : void {
   const [x, y] = d3pointer(event);
-  const node = new MyGraph.GraphNode;
-  graph.addNode( node, node.removeNeighbor, { x: x, y: y });
+  const existingNode = _getExistingNode(x, y);
+  if (existingNode !== undefined) {
+    const nodeData = d3select(existingNode).datum() as MyGraph.GraphMemberNode;
+    console.log("clicked an existing node:", existingNode);
+    console.log("node datum:", nodeData);
+    _addRemoveNodeToSelection(nodeData);
+  } else {
+    const node = new MyGraph.GraphNode;
+    graph.addNode( node, node.removeNeighbor, { x: x, y: y });
+  }
   renderGraph();
 }
 
+// handle all control button clicks
 function _handleControlsClick(event: Event) {
   const target = event.target as HTMLElement;
   const clickedButtonId = target.id;
   switch(clickedButtonId) {
     case 'newGraphButton':
       __newGraph();
+      break;
     case 'removeNodeButton':
-      if (selectedElements.length !== 1 && selectedElements[1])
-      __removeNode();
+      if (selectedNodes.length === 1) {
+        __removeNode(selectedNodes[0]);
+      }
+      break;
+    case 'addNeighborButton':
+      if (selectedNodes.length === 2) {
+        __addNeighbor(selectedNodes);
+      }
+      break;
+    case 'removeNeighborButton':
+      if (selectedNodes.length === 2) {
+        __removeNeighbor(selectedNodes);
+      }
+      break;
+    default:
+      break;
   }
 
   // creates a new graph and renders it in the SVG
@@ -98,39 +137,95 @@ function _handleControlsClick(event: Event) {
   }
 
   // removes a node from the graph
-  function __removeNode(graph: MyGraph.Graph, node: MyGraph.GraphNode) : void {
-    graph.removeNode(node);
+  function __removeNode(graphMemberNode: MyGraph.GraphMemberNode) : void {
+    graph.removeNode(graphMemberNode.node);
+    renderGraph();
   }
 
-  // adds an edge from one node to another in a given graph
-  function __addNeighbor(
-    graph: MyGraph.Graph,
-    startNode: MyGraph.GraphNode,
-    endNode: MyGraph.GraphNode,
-    edge: MyGraph.Edge) : void {
-      startNode.addNeighbor({
-        node: endNode,
-        edge: edge,
+  /**
+   * adds a neighbor to a node in the graph
+   * @param nodes - The array of selected nodes in the order they were selected.
+   */
+  function __addNeighbor(graphMemberNodes: MyGraph.GraphMemberNode[]) : void {
+      graphMemberNodes[0].node.addNeighbor({
+        node: graphMemberNodes[1].node,
+        edge: _getEdgeData(),
         graph: graph
       })
+      renderGraph();
   }
 
-  // removes an edge from one node to another in a given graph
-  function __removeNeighbor(
-    graph: MyGraph.Graph,
-    startNode: MyGraph.GraphNode,
-    endNode: MyGraph.GraphNode) : void {
-      startNode.removeNeighbor(endNode, graph)
+  /**
+   * removes a neighbor from a node in the graph
+   * @param nodes - The array of selected nodes in the order they were selected.
+   */
+  function __removeNeighbor(graphMemberNodes: MyGraph.GraphMemberNode[]) : void {
+      graphMemberNodes[0].node.removeNeighbor(graphMemberNodes[1].node, graph)
+      renderGraph();
+  }
+}
+
+// retrieves edge data from the DOM; throws error if required edge data doesn't exist
+function _getEdgeData() : MyGraph.Edge {
+  if (edgeInputs.direction?.value !== "" && edgeInputs.weight?.value !== "") {
+    const edge = {
+      directional: Boolean(edgeInputs.direction),
+      weight: Number(edgeInputs.weight) }
+    return edge;
+  }
+  throw new Error(`
+    Invalid edge data: direction ${edgeInputs.direction}
+    and weight ${edgeInputs.weight}`);
+}
+
+function _addRemoveNodeToSelection(node: MyGraph.GraphMemberNode) : void {
+  // to be implemented
+}
+
+function _getExistingNode(x: number, y: number) : SVGCircleElement  {
+  const nodes = svg.selectAll<SVGCircleElement, unknown>(".node");
+  let matchingNode : SVGCircleElement;
+  nodes.each(function() {
+    const circle = d3select(this);
+    if (__isClickInCircle(
+      [x, y],
+      [Number(circle.attr('cx')), Number(circle.attr('cy'))],
+      Number(circle.attr('r'))
+    )) {
+      matchingNode = this;
+    }
+  })
+
+  return matchingNode;
+
+  /* leverages Turf lib to see if the click point is in circle represented
+  by the provided center coords and radius */
+  function __isClickInCircle(
+    click: [number, number],
+    center: [number, number],
+    radius: number) : boolean {
+
+      /** Raw Math Logic */
+      const distanceSquared = Math.pow(click[0] - center[0], 2) + Math.pow(click[1] - center[1], 2);
+      const radiusSquared = radius * radius;
+      return distanceSquared <= radiusSquared;
+
+      /** Turf Logic */
+      // const circleCenter = turfPoint([center[0], center[1]]);
+      // const clickCoords = turfPoint([click[0], click[1]]);
+      // const circle = turfCircle(circleCenter, radius);
+      // const isClickInCircle = turfInCircle(clickCoords, circle);
+      // return isClickInCircle;
   }
 }
 
 function createEdgeCoords() : EdgeCoordinates[] {
   const allNeighbors : EdgeCoordinates[] = [];
-  for (let gmn of graph.nodes) {
-    for (let neighbor of gmn.node.graphNeighbors) {
+  for (let graphMemberNode of graph.nodes) {
+    for (let neighbor of graphMemberNode.node.graphNeighbors) {
       allNeighbors.push({
-        nodeOneX: gmn.location.x,
-        nodeOneY: gmn.location.y,
+        nodeOneX: graphMemberNode.location.x,
+        nodeOneY: graphMemberNode.location.y,
         nodeTwoX: graph.getNodeLocation(neighbor.node).x,
         nodeTwoY: graph.getNodeLocation(neighbor.node).y
       })
