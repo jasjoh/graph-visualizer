@@ -10,11 +10,6 @@ function main() {
   MySvg.renderGraph();
 }
 
-function newGraph() {
-  const graph = new MyGraph.Graph();
-  MySvg.renderGraph();
-}
-
 function testFillGraph(graph: MyGraph.Graph) {
   const nodeOne = new MyGraph.GraphNode();
   const nodeTwo = new MyGraph.GraphNode();

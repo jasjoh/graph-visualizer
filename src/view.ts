@@ -2,6 +2,43 @@ import { select as d3select, pointer as d3pointer } from 'd3';
 
 import { MyGraph } from './graph';
 
+export namespace MyControls {
+
+  // creates a new graph and renders it in the SVG
+  function newGraph() : void {
+    const graph = new MyGraph.Graph();
+    MySvg.initializeSvg(graph);
+    MySvg.renderGraph();
+  }
+
+  // removes a node from the graph
+  function removeNode(graph: MyGraph.Graph, node: MyGraph.GraphNode) : void {
+    graph.removeNode(node);
+  }
+
+  // adds an edge from one node to another in a given graph
+  function addNeighbor(
+    graph: MyGraph.Graph,
+    startNode: MyGraph.GraphNode,
+    endNode: MyGraph.GraphNode,
+    edge: MyGraph.Edge) : void {
+      startNode.addNeighbor({
+        node: endNode,
+        edge: edge,
+        graph: graph
+      })
+  }
+
+  // removes an edge from one node to another in a given graph
+  function removeNeighbor(
+    graph: MyGraph.Graph,
+    startNode: MyGraph.GraphNode,
+    endNode: MyGraph.GraphNode) : void {
+      startNode.removeNeighbor(endNode, graph)
+  }
+
+}
+
 export namespace MySvg {
 
   interface EdgeCoordinates {

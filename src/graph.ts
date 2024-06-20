@@ -265,7 +265,7 @@ export namespace MyGraph {
       this.graphNeighbors.splice(existingNeighborIndex, 1);
     }
 
-    /** Updates a GraphNeighbor in this GraphNode with a match node ID and graph.
+    /** Updates a GraphNeighbor in this GraphNode with a matching node ID and graph.
      * Returns undefined if successful and throws error otherwise.
      */
     updateNeighbor(neighbor: GraphNeighbor): void {
