@@ -1,5 +1,4 @@
 import { select as d3select, pointer as d3pointer } from 'd3';
-import { point as turfPoint, circle as turfCircle, booleanPointInPolygon as turfInCircle } from '@turf/turf';
 import * as MyGraph from './graph';
 
 export interface EdgeCoordinates {
