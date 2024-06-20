@@ -1,12 +1,12 @@
 body {
   font-family: Arial, sans-serif;
+  margin: 20px;
 }
 
 #graph-container {
   width: 800px;
   height: 600px;
   border: 1px solid #ccc;
-  margin: 20px;
 }
 
 .circle-outer {

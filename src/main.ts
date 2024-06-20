@@ -1,12 +1,12 @@
-import { MyGraph } from "./graph";
-import { MySvg } from "./view";
+import * as MyGraph from "./graph";
+import * as MySvg from "./view";
 
 document.addEventListener('DOMContentLoaded', main);
 
 function main() {
   const graph = new MyGraph.Graph();
   testFillGraph(graph);
-  MySvg.initializeSvg(graph);
+  MySvg.initializeOnMount(graph);
   MySvg.renderGraph();
 }
 

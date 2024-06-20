@@ -17,11 +17,12 @@
         <circle class="circle-inner" r="5" cx="200" cy="300"></circle>
       </svg> -->
     </div>
-    <button onclick="newGraph()">New (Reset) Graph</button>
-    <button onclick="removeNode()">Create Node</button>
-    <button onclick="addEdge()">Add Edge</button>
-    <button onclick="editEdge()">Edit Edge</button>
-    <button onclick="removeEdge()">Remove Edge</button>
+    <div id="controls">
+      <button id="newGraphButton"">New (Reset) Graph</button>
+      <button id="removeNodeButton">Remove Node</button>
+      <button id="addNeighborButton">Add Neighbor</button>
+      <button id="removeNeighborButton">Remove Neighbor</button>
+    </div>
 
     <!-- <script src="https://d3js.org/d3.v6.min.js"></script> -->
     <script type="module" src="/src/main.ts"></script>
