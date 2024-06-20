@@ -10,7 +10,8 @@ export interface EdgeCoordinates {
 }
 
 const nodeRadius = 10;
-const nodeFillColor = "#69b3a2";
+const nodeFillColor = "#fdff80";
+const highlightFillColor = "#69b3a2";
 
 const edgeStrokeColor = 'black';
 const edgeWidth = 3;
@@ -18,7 +19,7 @@ const edgeWidth = 3;
 let container : d3.Selection<HTMLElement, any, any, any>;
 let svg : d3.Selection<SVGSVGElement, any, any, any>;
 let graph : MyGraph.Graph | null = null;
-let selectedNodes : MyGraph.GraphMemberNode[] = [];
+let selectedNodesMap : Map<string, MyGraph.GraphMemberNode> = new Map();
 let edgeInputs : {
   direction: HTMLInputElement,
   weight: HTMLInputElement
@@ -74,6 +75,23 @@ export function renderGraph() : void {
     .attr('stroke', edgeStrokeColor)
     .attr('stroke-width', edgeWidth)
 
+  if (selectedNodesMap?.size > 0) {
+    const highlightedNodes = graph.nodes.filter((node) => {
+      return selectedNodesMap.has(node.node.id);
+    })
+    console.log("to be highlighted nodes on render:", highlightedNodes);
+    // add node highlights
+    svg.selectAll(".highlight")
+    .data(highlightedNodes)
+    .enter().append("circle")
+    .attr("class", "highlight")
+    .attr("r", nodeRadius + 2)
+    .attr("cx", (node: MyGraph.GraphMemberNode) => node.location?.x)
+    .attr("cy", (node: MyGraph.GraphMemberNode) => node.location?.y)
+    .style("fill", highlightFillColor);
+  }
+
+
   // add nodes
   svg.selectAll(".node")
     .data(graph.nodes)
@@ -97,7 +115,7 @@ function _handleSvgClick(event: PointerEvent) : void {
     _addRemoveNodeToSelection(nodeData);
   } else {
     const node = new MyGraph.GraphNode;
-    graph.addNode( node, node.removeNeighbor, { x: x, y: y });
+    graph.addNode( node, { x: x, y: y });
   }
   renderGraph();
 }
@@ -111,18 +129,18 @@ function _handleControlsClick(event: Event) {
       __newGraph();
       break;
     case 'removeNodeButton':
-      if (selectedNodes.length === 1) {
-        __removeNode(selectedNodes[0]);
+      if (selectedNodesMap?.size === 1) {
+        __removeNode(selectedNodesMap.entries[0]);
       }
       break;
     case 'addNeighborButton':
-      if (selectedNodes.length === 2) {
-        __addNeighbor(selectedNodes);
+      if (selectedNodesMap?.size === 2) {
+        __addNeighbor(selectedNodesMap);
       }
       break;
     case 'removeNeighborButton':
-      if (selectedNodes.length === 2) {
-        __removeNeighbor(selectedNodes);
+      if (selectedNodesMap?.size === 2) {
+        __removeNeighbor(selectedNodesMap);
       }
       break;
     default:
@@ -178,8 +196,12 @@ function _getEdgeData() : MyGraph.Edge {
     and weight ${edgeInputs.weight}`);
 }
 
-function _addRemoveNodeToSelection(node: MyGraph.GraphMemberNode) : void {
-  // to be implemented
+function _addRemoveNodeToSelection(graphMemberNode: MyGraph.GraphMemberNode) : void {
+  if (selectedNodesMap?.has(graphMemberNode.node.id)) {
+    selectedNodesMap.delete(graphMemberNode.node.id);
+  } else {
+    selectedNodesMap.set(graphMemberNode.node.id, graphMemberNode);
+  }
 }
 
 function _getExistingNode(x: number, y: number) : SVGCircleElement  {
@@ -198,8 +220,6 @@ function _getExistingNode(x: number, y: number) : SVGCircleElement  {
 
   return matchingNode;
 
-  /* leverages Turf lib to see if the click point is in circle represented
-  by the provided center coords and radius */
   function __isClickInCircle(
     click: [number, number],
     center: [number, number],
@@ -209,13 +229,6 @@ function _getExistingNode(x: number, y: number) : SVGCircleElement  {
       const distanceSquared = Math.pow(click[0] - center[0], 2) + Math.pow(click[1] - center[1], 2);
       const radiusSquared = radius * radius;
       return distanceSquared <= radiusSquared;
-
-      /** Turf Logic */
-      // const circleCenter = turfPoint([center[0], center[1]]);
-      // const clickCoords = turfPoint([click[0], click[1]]);
-      // const circle = turfCircle(circleCenter, radius);
-      // const isClickInCircle = turfInCircle(clickCoords, circle);
-      // return isClickInCircle;
   }
 }
 

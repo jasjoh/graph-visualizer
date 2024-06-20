@@ -15,16 +15,3 @@ body {
   margin-bottom: 5px;
   font-size: .8em;
 }
-
-.circle-outer {
-  fill: #69b3a2;
-}
-
-.circle-inner {
-  fill: #dfe223;
-}
-
-.circle-text {
-  font-size: .6em;
-  fill: white;
-}

@@ -22,16 +22,7 @@ export interface GraphNeighbor {
 export interface GraphMemberNode {
   node: GraphNode;
   location: GraphMemberLoc | undefined;
-  removeNeighbor: (node: GraphNode, graph: Graph) => void;
 }
-
-/** Describes a neighboring node, including it's edge. */
-// interface GraphRelationship {
-//   nodeOne: GraphNode;
-//   nodeTwo: GraphNode;
-//   oneToTwoEdge: Edge;
-//   twoToOneEdge: Edge;
-// }
 
 /** NodeManager singleton for tracking nodes
  * Maintains set of all created nodes
@@ -40,7 +31,7 @@ export interface GraphMemberNode {
 class NodeManager {
   private static instance: NodeManager;
   private nodes : Set<GraphNode>;
-  private lastNodeIdNumberAssigned: number | null
+  private lastNodeIdNumberAssigned: number | null;
 
   private constructor() {
     this.nodes = new Set<GraphNode>;
@@ -69,7 +60,12 @@ class NodeManager {
   }
 
   public getNewNodeId(): string {
-    return this.lastNodeIdNumberAssigned === null ? "" + 1 : "" + ++this.lastNodeIdNumberAssigned;
+    if (this.lastNodeIdNumberAssigned === null) {
+      this.lastNodeIdNumberAssigned = 1;
+      return "" + this.lastNodeIdNumberAssigned;
+    } else {
+      return "" + ++this.lastNodeIdNumberAssigned
+    }
   }
 };
 
@@ -77,7 +73,6 @@ class NodeManager {
 export class Graph {
   nodes: GraphMemberNode[];
   nodeCount: number;
-  // relationships: GraphRelationship[] | null;
 
   constructor() {
     this.nodes = [];
@@ -89,7 +84,7 @@ export class Graph {
    */
   private _removeNeighbors(node: GraphNode) {
     for (let gmn of this.nodes) {
-      gmn.removeNeighbor(node, this);
+      gmn.node.removeNeighbor(node, this);
     }
   }
 
@@ -104,7 +99,6 @@ export class Graph {
    */
   addNode(
     node: GraphNode,
-    removeNeighborFunction: (node: GraphNode, graph: Graph) => void,
     location?: GraphMemberLoc
   ): void {
     if (this.isNodeInGraph(node)) {
@@ -112,7 +106,6 @@ export class Graph {
     }
     this.nodes.push({
       node: node,
-      removeNeighbor: removeNeighborFunction,
       location: location
     });
     if (node.graph !== this) { node.addToGraph(this); }
@@ -234,7 +227,6 @@ export class GraphNode {
     if (!graph.isNodeInGraph(this)) {
       graph.addNode(
         this,
-        this.removeNeighbor.bind(this)
       );
     }
   }
