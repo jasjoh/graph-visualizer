@@ -1,5 +1,6 @@
 import { select as d3select, pointer as d3pointer } from 'd3';
-import * as MyGraph from './graph';
+import * as AppGraph from './graph';
+import * as AppAlgo from "./algos";
 
 export interface EdgeCoordinates {
   nodeOneX: number;
@@ -21,8 +22,8 @@ const arrowFillColor = '#8eb4d3';
 
 let container : d3.Selection<HTMLElement, any, any, any>;
 let svg : d3.Selection<SVGSVGElement, any, any, any>;
-let graph : MyGraph.Graph | null = null;
-let selectedNodesMap : Map<string, MyGraph.GraphMemberNode> = new Map();
+let graph : AppGraph.Graph | null = null;
+let selectedNodesMap : Map<string, AppGraph.GraphMemberNode> = new Map();
 let edgeInputs : {
   directional: HTMLInputElement,
   weight: HTMLInputElement
@@ -30,7 +31,7 @@ let edgeInputs : {
 
 
 // call on document load to initialize control handlers and initial graph
-export function initializeOnMount(graphToUse: MyGraph.Graph) {
+export function initializeOnMount(graphToUse: AppGraph.Graph) {
   _initializeControls();
   _initializeSvg(graphToUse);
 }
@@ -97,8 +98,8 @@ export function renderGraph() : void {
     .enter().append("circle")
     .attr("class", "highlight")
     .attr("r", nodeRadius + 2)
-    .attr("cx", (node: MyGraph.GraphMemberNode) => node.location?.x)
-    .attr("cy", (node: MyGraph.GraphMemberNode) => node.location?.y)
+    .attr("cx", (node: AppGraph.GraphMemberNode) => node.location?.x)
+    .attr("cy", (node: AppGraph.GraphMemberNode) => node.location?.y)
     .style("fill", highlightFillColor);
   }
 
@@ -108,8 +109,8 @@ export function renderGraph() : void {
   //   .enter().append("circle")
   //   .attr("class", "node")
   //   .attr("r", nodeRadius)
-  //   .attr("cx", (node: MyGraph.GraphMemberNode) => node.location?.x)
-  //   .attr("cy", (node: MyGraph.GraphMemberNode) => node.location?.y)
+  //   .attr("cx", (node: AppGraph.GraphMemberNode) => node.location?.x)
+  //   .attr("cy", (node: AppGraph.GraphMemberNode) => node.location?.y)
   //   .style("fill", nodeFillColor)
   // add nodes (over top of any highlights)
 
@@ -118,7 +119,7 @@ export function renderGraph() : void {
     .enter()
     .append("g")
     .attr("class", "node")
-    .attr("transform", (node: MyGraph.GraphMemberNode) => `translate(${node.location?.x},${node.location?.y})`)
+    .attr("transform", (node: AppGraph.GraphMemberNode) => `translate(${node.location?.x},${node.location?.y})`)
     .each(function (node, i) {
 
       // Add circle for the node
@@ -140,8 +141,8 @@ export function renderGraph() : void {
 
 // initialize controls
 function _initializeControls() {
-  const controlsDiv = document.getElementById('controls');
-  controlsDiv.addEventListener('click', _handleControlsClick);
+  const controlPanelDiv = document.getElementById('controlPanel');
+  controlPanelDiv.addEventListener('click', _handleControlsClick);
 
   edgeInputs = {
     directional: document.getElementById('edgeDirection') as HTMLInputElement,
@@ -150,7 +151,7 @@ function _initializeControls() {
 }
 
 // initialize the SVG with a graph instance
-function _initializeSvg(graphToUse: MyGraph.Graph) {
+function _initializeSvg(graphToUse: AppGraph.Graph) {
   graph = graphToUse;
   container = d3select("#graph-container");
   container.selectAll("*").remove();
@@ -166,7 +167,7 @@ function _handleSvgClick(event: PointerEvent) : void {
   const [x, y] = d3pointer(event);
   const existingNode = _getExistingNode(x, y);
   if (existingNode !== undefined) {
-    const nodeData = d3select(existingNode).datum() as MyGraph.GraphMemberNode;
+    const nodeData = d3select(existingNode).datum() as AppGraph.GraphMemberNode;
     console.log("clicked an existing node:", existingNode);
     console.log("node datum:", nodeData);
     if (selectedNodesMap?.has(nodeData.node.id)) {
@@ -174,7 +175,7 @@ function _handleSvgClick(event: PointerEvent) : void {
     else if (selectedNodesMap?.size < 2) {
       selectedNodesMap.set(nodeData.node.id, nodeData); }
   } else {
-    const node = new MyGraph.GraphNode;
+    const node = new AppGraph.GraphNode;
     graph.addNode( node, { x: x, y: y });
   }
   renderGraph();
@@ -211,19 +212,25 @@ function _handleControlsClick(event: Event) {
         __removeNeighbor(startNode, neighborNode);
       }
       break;
+      case 'runAlgoButton':
+        const algo = new AppAlgo.DijkstraAlgo(
+          graph, graph.nodes[0], graph.nodes[graph.nodeCount - 1]
+        );
+        algo.run();
+        break;
     default:
       break;
   }
 
   // creates a new graph and renders it in the SVG
   function __newGraph() : void {
-    const graph = new MyGraph.Graph();
+    const graph = new AppGraph.Graph();
     _initializeSvg(graph);
     renderGraph();
   }
 
   // removes a node from the graph
-  function __removeNode(graphMemberNode: MyGraph.GraphMemberNode) : void {
+  function __removeNode(graphMemberNode: AppGraph.GraphMemberNode) : void {
     graph.removeNode(graphMemberNode.node);
     selectedNodesMap.delete(graphMemberNode.node.id);
     renderGraph();
@@ -234,8 +241,8 @@ function _handleControlsClick(event: Event) {
    * @param nodes - The array of selected nodes in the order they were selected.
    */
   function __addNeighbor(
-    startNode: MyGraph.GraphMemberNode,
-    neighborNode: MyGraph.GraphMemberNode
+    startNode: AppGraph.GraphMemberNode,
+    neighborNode: AppGraph.GraphMemberNode
   ) : void {
     startNode.node.addNeighbor({
       node:neighborNode.node,
@@ -250,8 +257,8 @@ function _handleControlsClick(event: Event) {
    * @param nodes - The array of selected nodes in the order they were selected.
    */
   function __removeNeighbor(
-    startNode: MyGraph.GraphMemberNode,
-    neighborNode: MyGraph.GraphMemberNode
+    startNode: AppGraph.GraphMemberNode,
+    neighborNode: AppGraph.GraphMemberNode
   ) : void {
     startNode.node.removeNeighbor(neighborNode.node, graph)
     renderGraph();
@@ -259,7 +266,7 @@ function _handleControlsClick(event: Event) {
 }
 
 // retrieves edge data from the DOM; throws error if required edge data doesn't exist
-function _getEdgeData() : MyGraph.Edge {
+function _getEdgeData() : AppGraph.Edge {
   const directional = edgeInputs.directional?.value ?
     Boolean(edgeInputs.directional.value) :
     false
@@ -282,7 +289,7 @@ function _getExistingNode(x: number, y: number) : SVGCircleElement  {
   let matchingNode : SVGCircleElement;
   nodes.each(function() {
     const circle = d3select(this);
-    const nodeData = d3select(this).datum() as MyGraph.GraphMemberNode;
+    const nodeData = d3select(this).datum() as AppGraph.GraphMemberNode;
     if (__isClickInCircle(
       [x, y],
       [nodeData.location.x, nodeData.location.y],

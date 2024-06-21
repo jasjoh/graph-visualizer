@@ -1,20 +1,26 @@
-import * as MyGraph from "./graph";
-import * as MySvg from "./view";
+import * as AppGraph from "./graph";
+import * as AppView from "./view";
 
 document.addEventListener('DOMContentLoaded', main);
 
 function main() {
-  const graph = new MyGraph.Graph();
+  const graph = new AppGraph.Graph();
   testFillGraph(graph);
-  MySvg.initializeOnMount(graph);
-  MySvg.renderGraph();
+  AppView.initializeOnMount(graph);
+  AppView.renderGraph();
 }
 
-function testFillGraph(graph: MyGraph.Graph) {
-  const nodeOne = new MyGraph.GraphNode();
-  const nodeTwo = new MyGraph.GraphNode();
-  graph.addNode(nodeOne, { x: 100, y: 100 });
-  graph.addNode(nodeTwo, { x: 200, y: 200 });
-  nodeOne.addNeighbor({ node: nodeTwo, graph: graph, edge: { directional: false, weight: 0 }});
-  nodeTwo.addNeighbor({ node: nodeOne, graph: graph, edge: { directional: false, weight: 0 }});
+function testFillGraph(graph: AppGraph.Graph) {
+  const nodeOne = new AppGraph.GraphNode();
+  const nodeTwo = new AppGraph.GraphNode();
+  const nodeThree = new AppGraph.GraphNode();
+  const nodeFour = new AppGraph.GraphNode();
+  graph.addNode(nodeOne, { x: 200, y: 400 });
+  graph.addNode(nodeTwo, { x: 300, y: 500 });
+  graph.addNode(nodeThree, { x: 300, y: 300 });
+  graph.addNode(nodeFour, { x: 400, y: 400 });
+  nodeOne.addNeighbor({ node: nodeTwo, graph: graph, edge: { directional: false, weight: 5 }});
+  nodeOne.addNeighbor({ node: nodeThree, graph: graph, edge: { directional: false, weight: 10 }});
+  nodeTwo.addNeighbor({ node: nodeFour, graph: graph, edge: { directional: false, weight: 12 }});
+  nodeThree.addNeighbor({ node: nodeFour, graph: graph, edge: { directional: false, weight: 6 }});
 }

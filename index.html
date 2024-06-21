@@ -17,19 +17,23 @@
         <circle class="circle-inner" r="5" cx="200" cy="300"></circle>
       </svg> -->
     </div>
-    <div id="controls">
-      <button id="newGraphButton">New (Reset) Graph</button>
-      <button id="removeNodeButton">Remove Node</button>
-      <button id="addNeighborButton">Add Neighbor</button>
-      <button id="removeNeighborButton">Remove Neighbor</button>
+    <div id="controlPanel">
+      <div class="controls">
+        <button id="newGraphButton">New (Reset) Graph</button>
+        <button id="removeNodeButton">Remove Node</button>
+        <button id="addNeighborButton">Add Neighbor</button>
+        <button id="removeNeighborButton">Remove Neighbor</button>
+      </div>
+      <div id="edgeData">
+        <label for="edgeDirectional">Edge Directional</label>
+        <input id="edgeDirectional" name="edgeDirectional" value="false" />
+        <label for="edgeWeight">Edge Weight</label>
+        <input id="edgeWeight" name="edgeWeight" value="0"/>
+      </div>
+      <div class="controls">
+        <button id="runAlgoButton">Run Algo</button>
+      </div>
     </div>
-    <div id="edgeData">
-      <label for="edgeDirectional">Edge Directional</label>
-      <input id="edgeDirectional" name="edgeDirectional" value="false" />
-      <label for="edgeWeight">Edge Weight</label>
-      <input id="edgeWeight" name="edgeWeight" value="0"/>
-    </div>
-
     <!-- <script src="https://d3js.org/d3.v6.min.js"></script> -->
     <script type="module" src="/src/main.ts"></script>
 </html>

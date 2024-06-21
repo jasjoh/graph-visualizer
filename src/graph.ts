@@ -73,6 +73,8 @@ class NodeManager {
 export class Graph {
   nodes: GraphMemberNode[];
   nodeCount: number;
+  // startingNodeIndex: string;
+  // endingNodeIndex: string;
 
   constructor() {
     this.nodes = [];
