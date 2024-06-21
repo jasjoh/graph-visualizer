@@ -111,7 +111,10 @@ function _handleSvgClick(event: PointerEvent) : void {
     const nodeData = d3select(existingNode).datum() as MyGraph.GraphMemberNode;
     console.log("clicked an existing node:", existingNode);
     console.log("node datum:", nodeData);
-    _addRemoveNodeToSelection(nodeData);
+    if (selectedNodesMap?.has(nodeData.node.id)) {
+      selectedNodesMap.delete(nodeData.node.id); }
+    else if (selectedNodesMap?.size < 2) {
+      selectedNodesMap.set(nodeData.node.id, nodeData); }
   } else {
     const node = new MyGraph.GraphNode;
     graph.addNode( node, { x: x, y: y });
@@ -213,14 +216,6 @@ function _getEdgeData() : MyGraph.Edge {
   }
 
   return edge;
-}
-
-function _addRemoveNodeToSelection(graphMemberNode: MyGraph.GraphMemberNode) : void {
-  if (selectedNodesMap?.has(graphMemberNode.node.id)) {
-    selectedNodesMap.delete(graphMemberNode.node.id);
-  } else {
-    selectedNodesMap.set(graphMemberNode.node.id, graphMemberNode);
-  }
 }
 
 function _getExistingNode(x: number, y: number) : SVGCircleElement  {
