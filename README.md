@@ -1,10 +1,17 @@
-### Dijkstra Algorithm Visualizer
+### Graph Algorithm Visualizer
 ## What is this?
-This project is a web app that helps visualize how Dijkstra's graph pathing algorithm works. At a high level it:
+This project is a web app that helps visualize how different algorithms work in the context of graphs.
 
-1. Allows you to define a graph by creating, adding, removing and creating relationships between nodes.
-2. Renders the graph using HTML native scalable vector graphics (<SVG>)
-3. Visualizes how Dijkstra's algorithm paths through the graph to finding shortest distance between two nodes.
+At a high level it supports two major capabilities:
 
-## IMPORTANT NOTE:
-Due to the issue highlighted in https://stackoverflow.com/questions/48471651/es6-module-import-of-d3-4-x-fails, you need to manually update the import line for d3 to `import * as d3 from 'https://unpkg.com/d3?module'` in order for the app to properly import d3.
+1. Visually define and manage a graphs via an SVG.
+2. Run an algorithm (from a pre-defined list) against that graph and view an animation of it's behavior.
+
+## Tech Stack
+- JavaScript (TypeScript), HTML, CSS
+- Vite (package manager)
+- D3 (SVG management)
+
+## How to run.
+1. Install all dependencies via `npm install`
+2. Run the app (runs locally on port 3000) via `npm run dev`
