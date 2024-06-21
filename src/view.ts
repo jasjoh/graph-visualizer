@@ -20,7 +20,7 @@ let svg : d3.Selection<SVGSVGElement, any, any, any>;
 let graph : MyGraph.Graph | null = null;
 let selectedNodesMap : Map<string, MyGraph.GraphMemberNode> = new Map();
 let edgeInputs : {
-  direction: HTMLInputElement,
+  directional: HTMLInputElement,
   weight: HTMLInputElement
 };
 
@@ -37,7 +37,7 @@ function _initializeControls() {
   controlsDiv.addEventListener('click', _handleControlsClick);
 
   edgeInputs = {
-    direction: document.getElementById('edgeDirection') as HTMLInputElement,
+    directional: document.getElementById('edgeDirection') as HTMLInputElement,
     weight: document.getElementById('edgeWeight') as HTMLInputElement
   }
 }
@@ -136,12 +136,18 @@ function _handleControlsClick(event: Event) {
       break;
     case 'addNeighborButton':
       if (selectedNodesMap?.size === 2) {
-        __addNeighbor(selectedNodesMap);
+        const mapEntries = selectedNodesMap.entries();
+        const startNode = mapEntries.next().value[1];
+        const neighborNode = mapEntries.next().value[1];
+        __addNeighbor(startNode, neighborNode);
       }
       break;
     case 'removeNeighborButton':
       if (selectedNodesMap?.size === 2) {
-        __removeNeighbor(selectedNodesMap);
+        const mapEntries = selectedNodesMap.entries();
+        const startNode = mapEntries.next().value[1];
+        const neighborNode = mapEntries.next().value[1];
+        __removeNeighbor(startNode, neighborNode);
       }
       break;
     default:
@@ -166,36 +172,47 @@ function _handleControlsClick(event: Event) {
    * adds a neighbor to a node in the graph
    * @param nodes - The array of selected nodes in the order they were selected.
    */
-  function __addNeighbor(graphMemberNodes: MyGraph.GraphMemberNode[]) : void {
-      graphMemberNodes[0].node.addNeighbor({
-        node: graphMemberNodes[1].node,
-        edge: _getEdgeData(),
-        graph: graph
-      })
-      renderGraph();
+  function __addNeighbor(
+    startNode: MyGraph.GraphMemberNode,
+    neighborNode: MyGraph.GraphMemberNode
+  ) : void {
+    startNode.node.addNeighbor({
+      node:neighborNode.node,
+      edge: _getEdgeData(),
+      graph: graph
+    })
+    renderGraph();
   }
 
   /**
    * removes a neighbor from a node in the graph
    * @param nodes - The array of selected nodes in the order they were selected.
    */
-  function __removeNeighbor(graphMemberNodes: MyGraph.GraphMemberNode[]) : void {
-      graphMemberNodes[0].node.removeNeighbor(graphMemberNodes[1].node, graph)
-      renderGraph();
+  function __removeNeighbor(
+    startNode: MyGraph.GraphMemberNode,
+    neighborNode: MyGraph.GraphMemberNode
+  ) : void {
+    startNode.node.removeNeighbor(neighborNode.node, graph)
+    renderGraph();
   }
 }
 
 // retrieves edge data from the DOM; throws error if required edge data doesn't exist
 function _getEdgeData() : MyGraph.Edge {
-  if (edgeInputs.direction?.value !== "" && edgeInputs.weight?.value !== "") {
-    const edge = {
-      directional: Boolean(edgeInputs.direction),
-      weight: Number(edgeInputs.weight) }
-    return edge;
+  const directional = edgeInputs.directional?.value ?
+    Boolean(edgeInputs.directional.value) :
+    false
+
+  const weight = edgeInputs.weight?.value ?
+    Number(edgeInputs.weight.value) :
+    0
+
+  const edge = {
+    directional: directional,
+    weight: weight
   }
-  throw new Error(`
-    Invalid edge data: direction ${edgeInputs.direction}
-    and weight ${edgeInputs.weight}`);
+
+  return edge;
 }
 
 function _addRemoveNodeToSelection(graphMemberNode: MyGraph.GraphMemberNode) : void {
