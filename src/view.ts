@@ -15,6 +15,8 @@ const highlightFillColor = "#373737";
 const edgeStrokeColor = '#8eb4d3';
 const edgeWidth = 3;
 
+const arrowFillColor = '#8eb4d3';
+
 let container : d3.Selection<HTMLElement, any, any, any>;
 let svg : d3.Selection<SVGSVGElement, any, any, any>;
 let graph : MyGraph.Graph | null = null;
@@ -60,11 +62,11 @@ export function renderGraph() : void {
   // remove all existing elements
   svg.selectAll("*").remove();
 
-  const allNeighbors = createEdgeCoords();
+  const edgeCoords = createEdgeCoords();
 
   // add edges
   svg.selectAll(".edge")
-    .data(allNeighbors)
+    .data(edgeCoords)
     .enter().append("line")
     .attr("class", "edge")
     .attr('x1', (coords : EdgeCoordinates) => coords.nodeOneX )
@@ -73,7 +75,6 @@ export function renderGraph() : void {
     .attr('y2', (coords : EdgeCoordinates) => coords.nodeTwoY )
     .attr('stroke', edgeStrokeColor)
     .attr('stroke-width', edgeWidth)
-
 
   // add selected node highlights
   if (selectedNodesMap?.size > 0) {
@@ -247,16 +248,60 @@ function _getExistingNode(x: number, y: number) : SVGCircleElement  {
 }
 
 function createEdgeCoords() : EdgeCoordinates[] {
-  const allNeighbors : EdgeCoordinates[] = [];
+  const edgeCoords : EdgeCoordinates[] = [];
   for (let graphMemberNode of graph.nodes) {
     for (let neighbor of graphMemberNode.node.graphNeighbors) {
-      allNeighbors.push({
-        nodeOneX: graphMemberNode.location.x,
-        nodeOneY: graphMemberNode.location.y,
-        nodeTwoX: graph.getNodeLocation(neighbor.node).x,
-        nodeTwoY: graph.getNodeLocation(neighbor.node).y
-      })
+      /**
+       * If n1 or n2 has a lesser y && greater x, go up and left, down and right
+       * Else n1 or n2 has lesser y && lesser x, go up and right, down and left
+       */
+      if (
+        (graphMemberNode.location.y > graph.getNodeLocation(neighbor.node).y &&
+        graphMemberNode.location.x < graph.getNodeLocation(neighbor.node).x) ||
+        (graphMemberNode.location.y < graph.getNodeLocation(neighbor.node).y &&
+        graphMemberNode.location.x > graph.getNodeLocation(neighbor.node).x)
+      ) {
+        // go up and left, down and right for both
+        if (
+          graphMemberNode.location.y > graph.getNodeLocation(neighbor.node).y
+        ) {
+          edgeCoords.push({
+            nodeOneX: graphMemberNode.location.x - nodeRadius / 2,
+            nodeOneY: graphMemberNode.location.y - nodeRadius / 2,
+            nodeTwoX: graph.getNodeLocation(neighbor.node).x - nodeRadius / 2,
+            nodeTwoY: graph.getNodeLocation(neighbor.node).y - nodeRadius / 2
+          })
+        } else {
+          edgeCoords.push({
+            nodeTwoX: graphMemberNode.location.x + nodeRadius / 2,
+            nodeTwoY: graphMemberNode.location.y + nodeRadius / 2,
+            nodeOneX: graph.getNodeLocation(neighbor.node).x + nodeRadius / 2,
+            nodeOneY: graph.getNodeLocation(neighbor.node).y + nodeRadius / 2
+          })
+        }
+      } else {
+        // go up and right, down and left for both
+        if (
+          graphMemberNode.location.y > graph.getNodeLocation(neighbor.node).y
+        ) {
+          edgeCoords.push({
+            nodeOneX: graphMemberNode.location.x + nodeRadius / 2,
+            nodeOneY: graphMemberNode.location.y - nodeRadius / 2,
+            nodeTwoX: graph.getNodeLocation(neighbor.node).x + nodeRadius / 2,
+            nodeTwoY: graph.getNodeLocation(neighbor.node).y - nodeRadius / 2
+          })
+        } else {
+          edgeCoords.push({
+            nodeTwoX: graphMemberNode.location.x - nodeRadius / 2,
+            nodeTwoY: graphMemberNode.location.y + nodeRadius / 2,
+            nodeOneX: graph.getNodeLocation(neighbor.node).x - nodeRadius / 2,
+            nodeOneY: graph.getNodeLocation(neighbor.node).y + nodeRadius / 2
+          })
+        }
+      }
+
     }
   }
-  return allNeighbors;
+  return edgeCoords;
 }
+
