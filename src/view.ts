@@ -6,6 +6,7 @@ export interface EdgeCoordinates {
   nodeOneY: number;
   nodeTwoX: number;
   nodeTwoY: number;
+  start: boolean;
 }
 
 const nodeRadius = 10;
@@ -33,48 +34,56 @@ export function initializeOnMount(graphToUse: MyGraph.Graph) {
   _initializeSvg(graphToUse);
 }
 
-// initialize controls
-function _initializeControls() {
-  const controlsDiv = document.getElementById('controls');
-  controlsDiv.addEventListener('click', _handleControlsClick);
-
-  edgeInputs = {
-    directional: document.getElementById('edgeDirection') as HTMLInputElement,
-    weight: document.getElementById('edgeWeight') as HTMLInputElement
-  }
-}
-
-// initialize the SVG with a graph instance
-function _initializeSvg(graphToUse: MyGraph.Graph) {
-  graph = graphToUse;
-  container = d3select("#graph-container");
-  container.selectAll("*").remove();
-  svg = container.append("svg")
-  .attr("width", 800)
-  .attr("height", 600);
-
-  svg.on('pointerdown', _handleSvgClick);
-}
-
 // re-render the graph in the SVG
 export function renderGraph() : void {
 
   // remove all existing elements
   svg.selectAll("*").remove();
 
-  const edgeCoords = createEdgeCoords();
+  const edgeCoords = _createEdgeCoords();
+
+  // define the directional arrows (markers)
+  svg.append("defs")
+    .append("marker")
+    .attr("id", "arrow") // used for reference when adding lines
+    .attr("viewBox", "0 0 10 20") // size of arrow's coordinate system
+    .attr("refX", 20) // align line to the middle (horizontally) of the marker
+    .attr("refY", 5) // align line to the middle (vertically) of the marker
+    .attr("markerWidth", 6)
+    .attr("markerHeight", 6)
+    .attr("orient", "auto-start-reverse") // orient marker to line
+    .append("path") // begin defining the path (shape) of the marker
+    .attr("d", "M 0 0 L 10 5 L 0 10 z") // define path data (route of the path)
+    .attr("class", "arrow") // add a class for CSS styling
+    .style("fill", arrowFillColor);
 
   // add edges
   svg.selectAll(".edge")
     .data(edgeCoords)
     .enter().append("line")
     .attr("class", "edge")
-    .attr('x1', (coords : EdgeCoordinates) => coords.nodeOneX )
+    // .attr('x1', (coords : EdgeCoordinates) => coords.nodeOneX )
+    .attr('x1', (coords : EdgeCoordinates) => {
+      console.log("hello");
+      return coords.nodeOneX
+    } )
     .attr('y1', (coords : EdgeCoordinates) => coords.nodeOneY )
     .attr('x2', (coords : EdgeCoordinates) => coords.nodeTwoX )
     .attr('y2', (coords : EdgeCoordinates) => coords.nodeTwoY )
     .attr('stroke', edgeStrokeColor)
     .attr('stroke-width', edgeWidth)
+    .attr('marker-start',
+      (coords : EdgeCoordinates) => {
+         console.log(`coords.start: ${coords.start}`);
+         return coords.start ? 'url(#arrow)' : null;
+      }
+    )
+    .attr('marker-end',
+      (coords : EdgeCoordinates) => {
+         console.log(`coords.start: ${coords.start}`);
+         return coords.start ? null : 'url(#arrow)';
+      }
+    )
 
   // add selected node highlights
   if (selectedNodesMap?.size > 0) {
@@ -102,6 +111,29 @@ export function renderGraph() : void {
     .attr("cy", (node: MyGraph.GraphMemberNode) => node.location?.y)
     .style("fill", nodeFillColor);
 
+}
+
+// initialize controls
+function _initializeControls() {
+  const controlsDiv = document.getElementById('controls');
+  controlsDiv.addEventListener('click', _handleControlsClick);
+
+  edgeInputs = {
+    directional: document.getElementById('edgeDirection') as HTMLInputElement,
+    weight: document.getElementById('edgeWeight') as HTMLInputElement
+  }
+}
+
+// initialize the SVG with a graph instance
+function _initializeSvg(graphToUse: MyGraph.Graph) {
+  graph = graphToUse;
+  container = d3select("#graph-container");
+  container.selectAll("*").remove();
+  svg = container.append("svg")
+  .attr("width", 800)
+  .attr("height", 600);
+
+  svg.on('pointerdown', _handleSvgClick);
 }
 
 // handle all mouse clicks within the SVG
@@ -219,6 +251,7 @@ function _getEdgeData() : MyGraph.Edge {
   return edge;
 }
 
+// returns any matching node found at the provided coordinates; undefined otherwise
 function _getExistingNode(x: number, y: number) : SVGCircleElement  {
   const nodes = svg.selectAll<SVGCircleElement, unknown>(".node");
   let matchingNode : SVGCircleElement;
@@ -247,7 +280,8 @@ function _getExistingNode(x: number, y: number) : SVGCircleElement  {
   }
 }
 
-function createEdgeCoords() : EdgeCoordinates[] {
+// generates edge (line) coordinates for all neighbors in the graph
+function _createEdgeCoords() : EdgeCoordinates[] {
   const edgeCoords : EdgeCoordinates[] = [];
   for (let graphMemberNode of graph.nodes) {
     for (let neighbor of graphMemberNode.node.graphNeighbors) {
@@ -269,14 +303,16 @@ function createEdgeCoords() : EdgeCoordinates[] {
             nodeOneX: graphMemberNode.location.x - nodeRadius / 2,
             nodeOneY: graphMemberNode.location.y - nodeRadius / 2,
             nodeTwoX: graph.getNodeLocation(neighbor.node).x - nodeRadius / 2,
-            nodeTwoY: graph.getNodeLocation(neighbor.node).y - nodeRadius / 2
+            nodeTwoY: graph.getNodeLocation(neighbor.node).y - nodeRadius / 2,
+            start: false
           })
         } else {
           edgeCoords.push({
             nodeTwoX: graphMemberNode.location.x + nodeRadius / 2,
             nodeTwoY: graphMemberNode.location.y + nodeRadius / 2,
             nodeOneX: graph.getNodeLocation(neighbor.node).x + nodeRadius / 2,
-            nodeOneY: graph.getNodeLocation(neighbor.node).y + nodeRadius / 2
+            nodeOneY: graph.getNodeLocation(neighbor.node).y + nodeRadius / 2,
+            start: true
           })
         }
       } else {
@@ -288,14 +324,16 @@ function createEdgeCoords() : EdgeCoordinates[] {
             nodeOneX: graphMemberNode.location.x + nodeRadius / 2,
             nodeOneY: graphMemberNode.location.y - nodeRadius / 2,
             nodeTwoX: graph.getNodeLocation(neighbor.node).x + nodeRadius / 2,
-            nodeTwoY: graph.getNodeLocation(neighbor.node).y - nodeRadius / 2
+            nodeTwoY: graph.getNodeLocation(neighbor.node).y - nodeRadius / 2,
+            start: false
           })
         } else {
           edgeCoords.push({
             nodeTwoX: graphMemberNode.location.x - nodeRadius / 2,
             nodeTwoY: graphMemberNode.location.y + nodeRadius / 2,
             nodeOneX: graph.getNodeLocation(neighbor.node).x - nodeRadius / 2,
-            nodeOneY: graph.getNodeLocation(neighbor.node).y + nodeRadius / 2
+            nodeOneY: graph.getNodeLocation(neighbor.node).y + nodeRadius / 2,
+            start: true
           })
         }
       }
