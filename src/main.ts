@@ -1,5 +1,5 @@
 import * as AppGraph from "./graph";
-import * as AppView from "./view";
+import * as AppView from "./svg";
 
 document.addEventListener('DOMContentLoaded', main);
 

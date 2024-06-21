@@ -1,6 +1,6 @@
 import { select as d3select, pointer as d3pointer } from 'd3';
 import * as AppGraph from './graph';
-import * as AppAlgo from "./algos";
+import * as AppAlgo from "./dijkstra";
 
 export interface EdgeCoordinates {
   nodeOneX: number;

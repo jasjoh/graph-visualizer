@@ -26,6 +26,7 @@ export class DijkstraAlgo {
     this.generateHashGraph();
     this.generateCostsHash();
     this.generateCheapestParentsHash();
+    this.initializeDomElements();
   }
 
   /** Runs the algorithm */
@@ -126,5 +127,44 @@ export class DijkstraAlgo {
       }
     }
     console.log(`Final cheapest parents hash established: ${this.cheapestParentsHash}`);
+  }
+
+  // initializes the DOM elements for the Dijkstra tables
+  private initializeDomElements() {
+    const mapTablesDiv = document.getElementById('dijkstraTables');
+
+
+    mapTablesDiv.appendChild(this.createTable(this.hashGraph, true, 'Hash Graph'));
+    mapTablesDiv.appendChild(this.createTable(this.costsHash, false, 'Costs Hash'));
+    mapTablesDiv.appendChild(this.createTable(this.cheapestParentsHash, false, 'Cheapest'));
+  }
+
+  // creates a table from a map
+  private createTable(map : Map<string, unknown>, isNested = false, name: string = undefined) {
+    const table = document.createElement('table');
+    table.className = 'map-table';
+
+    for (const [key, value] of map) {
+        const row = table.insertRow();
+        const cell1 = row.insertCell(0);
+        const cell2 = row.insertCell(1);
+        cell1.innerText = key;
+
+        if (isNested && value instanceof Map) {
+            cell2.appendChild(this.createTable(value));
+        } else {
+            cell2.innerText = value === null ? 'null' : value.toString();
+        }
+    }
+
+    let tableContainer = document.createElement('div');
+    if (name) {
+      let tableText = document.createElement('div');
+      tableText.innerText = name;
+      tableContainer.appendChild(tableText);
+    }
+    tableContainer.appendChild(table);
+
+    return tableContainer;
   }
 }

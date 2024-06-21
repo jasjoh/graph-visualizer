@@ -10,7 +10,7 @@ body {
   margin-bottom: 5px;
 }
 
-.controls, #edgeData {
+.controls, #edgeData, #dijkstraTables {
   margin-top: 5px;
   margin-bottom: 5px;
   font-size: .8em;
@@ -19,4 +19,18 @@ body {
 .node-id-text {
   /* pointer-events: none; */
   cursor: default;
+}
+
+#dijkstraTables {
+    display: flex;
+}
+.map-table {
+    width: 100px;
+    border-collapse: collapse;
+    margin-right: 10px;
+}
+.map-table th, .map-table td {
+    border: 1px solid black;
+    width: 50%;
+    text-align: center;
 }
