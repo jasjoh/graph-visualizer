@@ -84,7 +84,9 @@ export class Graph {
    */
   private _removeNeighbors(node: GraphNode) {
     for (let gmn of this.nodes) {
-      gmn.node.removeNeighbor(node, this);
+      if (gmn.node.isExistingNeighbor(node, this)) {
+        gmn.node.removeNeighbor(node, this);
+      }
     }
   }
 
@@ -194,22 +196,6 @@ export class GraphNode {
     return nodeManager.getNewNodeId();
   }
 
-  /** Returns true or false based on whether the provided neighbor
-   * is already a neighbor of this.graphNeighbors.
-   */
-  private _isExistingNeighbor(node: GraphNode, graph: Graph): boolean {
-    if (this.graphNeighbors === null) { return false; }
-    for (let existingNeighbor of this.graphNeighbors) {
-      if (
-        node === existingNeighbor.node &&
-        graph === existingNeighbor.graph
-      ) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /** Internal function to remove all neighbors when removed from a graph
    * Throws an error if a specific neighbor is provided and doesn't exist
    */
@@ -242,12 +228,28 @@ export class GraphNode {
     this._removeAllNeighbors();
   }
 
+  /** Returns true or false based on whether the provided neighbor
+   * is already a neighbor of this.graphNeighbors.
+   */
+  isExistingNeighbor(node: GraphNode, graph: Graph): boolean {
+    if (this.graphNeighbors === null) { return false; }
+    for (let existingNeighbor of this.graphNeighbors) {
+      if (
+        node === existingNeighbor.node &&
+        graph === existingNeighbor.graph
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Adds a new GraphNeighbor to this GraphNode.
    * If GraphNode is already a neighbor, throws error
    * If not, adds as a neighbor and returns undefined.
    */
   addNeighbor(neighbor: GraphNeighbor): void {
-    if (this._isExistingNeighbor(neighbor.node, neighbor.graph)) {
+    if (this.isExistingNeighbor(neighbor.node, neighbor.graph)) {
       throw new Error(
         `GraphNode is already a neighbor. To update an existing neighbor
         relationship, using updateNeighbor().`
@@ -265,7 +267,7 @@ export class GraphNode {
    * Returns undefined if successful and throws error otherwise.
    */
   removeNeighbor(node: GraphNode, graph: Graph): void {
-    if (!this._isExistingNeighbor(node, graph) || this.graphNeighbors === null) {
+    if (!this.isExistingNeighbor(node, graph) || this.graphNeighbors === null) {
       throw new Error(
         `GraphNode is not an existing neighbor.`
       );
@@ -281,7 +283,7 @@ export class GraphNode {
    */
   updateNeighbor(neighbor: GraphNeighbor): void {
     if (
-      !this._isExistingNeighbor(neighbor.node, neighbor.graph) ||
+      !this.isExistingNeighbor(neighbor.node, neighbor.graph) ||
       this.graphNeighbors === null
     ) {
       throw new Error(

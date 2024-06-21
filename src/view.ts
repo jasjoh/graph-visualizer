@@ -9,10 +9,10 @@ export interface EdgeCoordinates {
 }
 
 const nodeRadius = 10;
-const nodeFillColor = "#fdff80";
-const highlightFillColor = "#69b3a2";
+const nodeFillColor = "#bcbcbc";
+const highlightFillColor = "#373737";
 
-const edgeStrokeColor = 'black';
+const edgeStrokeColor = '#8eb4d3';
 const edgeWidth = 3;
 
 let container : d3.Selection<HTMLElement, any, any, any>;
@@ -74,12 +74,13 @@ export function renderGraph() : void {
     .attr('stroke', edgeStrokeColor)
     .attr('stroke-width', edgeWidth)
 
+
+  // add selected node highlights
   if (selectedNodesMap?.size > 0) {
     const highlightedNodes = graph.nodes.filter((node) => {
       return selectedNodesMap.has(node.node.id);
     })
     console.log("to be highlighted nodes on render:", highlightedNodes);
-    // add node highlights
     svg.selectAll(".highlight")
     .data(highlightedNodes)
     .enter().append("circle")
@@ -90,8 +91,7 @@ export function renderGraph() : void {
     .style("fill", highlightFillColor);
   }
 
-
-  // add nodes
+  // add nodes (over top of any highlights)
   svg.selectAll(".node")
     .data(graph.nodes)
     .enter().append("circle")
@@ -129,7 +129,9 @@ function _handleControlsClick(event: Event) {
       break;
     case 'removeNodeButton':
       if (selectedNodesMap?.size === 1) {
-        __removeNode(selectedNodesMap.entries[0]);
+        const mapEntries = selectedNodesMap.entries();
+        const selectedNode = mapEntries.next().value[1];
+        __removeNode(selectedNode);
       }
       break;
     case 'addNeighborButton':
@@ -156,6 +158,7 @@ function _handleControlsClick(event: Event) {
   // removes a node from the graph
   function __removeNode(graphMemberNode: MyGraph.GraphMemberNode) : void {
     graph.removeNode(graphMemberNode.node);
+    selectedNodesMap.delete(graphMemberNode.node.id);
     renderGraph();
   }
 
