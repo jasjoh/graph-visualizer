@@ -12,6 +12,7 @@ export interface EdgeCoordinates {
 const nodeRadius = 10;
 const nodeFillColor = "#bcbcbc";
 const highlightFillColor = "#373737";
+const nodeTextFillColor = "#000000"
 
 const edgeStrokeColor = '#8eb4d3';
 const edgeWidth = 3;
@@ -102,14 +103,38 @@ export function renderGraph() : void {
   }
 
   // add nodes (over top of any highlights)
+  // svg.selectAll(".node")
+  //   .data(graph.nodes)
+  //   .enter().append("circle")
+  //   .attr("class", "node")
+  //   .attr("r", nodeRadius)
+  //   .attr("cx", (node: MyGraph.GraphMemberNode) => node.location?.x)
+  //   .attr("cy", (node: MyGraph.GraphMemberNode) => node.location?.y)
+  //   .style("fill", nodeFillColor)
+  // add nodes (over top of any highlights)
+
   svg.selectAll(".node")
     .data(graph.nodes)
-    .enter().append("circle")
+    .enter()
+    .append("g")
     .attr("class", "node")
-    .attr("r", nodeRadius)
-    .attr("cx", (node: MyGraph.GraphMemberNode) => node.location?.x)
-    .attr("cy", (node: MyGraph.GraphMemberNode) => node.location?.y)
-    .style("fill", nodeFillColor);
+    .attr("transform", (node: MyGraph.GraphMemberNode) => `translate(${node.location?.x},${node.location?.y})`)
+    .each(function (node, i) {
+
+      // Add circle for the node
+      d3select(this).append("circle")
+        .attr("r", nodeRadius)
+        .attr('class', 'node-circle')
+        .style("fill", nodeFillColor);
+
+      // Add text for the node id
+      d3select(this).append("text")
+        .text(node.node.id)
+        .attr('class', 'node-id-text')
+        .attr("text-anchor", "middle")
+        .attr("dy", ".35em")
+        .style("fill", nodeTextFillColor);
+    });
 
 }
 
@@ -253,13 +278,14 @@ function _getEdgeData() : MyGraph.Edge {
 
 // returns any matching node found at the provided coordinates; undefined otherwise
 function _getExistingNode(x: number, y: number) : SVGCircleElement  {
-  const nodes = svg.selectAll<SVGCircleElement, unknown>(".node");
+  const nodes = svg.selectAll<SVGCircleElement, unknown>(".node-circle");
   let matchingNode : SVGCircleElement;
   nodes.each(function() {
     const circle = d3select(this);
+    const nodeData = d3select(this).datum() as MyGraph.GraphMemberNode;
     if (__isClickInCircle(
       [x, y],
-      [Number(circle.attr('cx')), Number(circle.attr('cy'))],
+      [nodeData.location.x, nodeData.location.y],
       Number(circle.attr('r'))
     )) {
       matchingNode = this;
