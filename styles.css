@@ -24,13 +24,22 @@ body {
 #dijkstraTables {
     display: flex;
 }
-.map-table {
-    width: 100px;
+
+.tables-table {
+    /* width: 100px; */
     border-collapse: collapse;
+    text-wrap: nowrap;
     margin-right: 10px;
 }
-.map-table th, .map-table td {
+
+.tables-table th, .tables-table td {
     border: 1px solid black;
     width: 50%;
     text-align: center;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.tables-table-header {
+  background-color: lightgray;
 }

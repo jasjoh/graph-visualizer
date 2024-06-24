@@ -7,6 +7,7 @@ export interface EdgeCoordinates {
   nodeOneY: number;
   nodeTwoX: number;
   nodeTwoY: number;
+  weight: number;
   start: boolean;
 }
 
@@ -137,6 +138,16 @@ export function renderGraph() : void {
         .style("fill", nodeTextFillColor);
     });
 
+  svg.selectAll(".edge-text")
+    .data(edgeCoords)
+    .enter().append("text")
+    .attr("class", "edge-text")
+    .attr('x', d => (d.nodeOneX + d.nodeTwoX) / 2)
+    .attr('y', d => (d.nodeOneY + d.nodeTwoY) / 2)
+    .attr('dy', '-0.5em')  // Adjust to position the text slightly above the line
+    .attr('text-anchor', 'middle')
+    .text(d => d.weight);
+
 }
 
 // initialize controls
@@ -182,7 +193,7 @@ function _handleSvgClick(event: PointerEvent) : void {
 }
 
 // handle all control button clicks
-function _handleControlsClick(event: Event) {
+async function _handleControlsClick(event: Event) {
   const target = event.target as HTMLElement;
   const clickedButtonId = target.id;
   switch(clickedButtonId) {
@@ -216,7 +227,7 @@ function _handleControlsClick(event: Event) {
         const algo = new AppAlgo.DijkstraAlgo(
           graph, graph.nodes[0], graph.nodes[graph.nodeCount - 1]
         );
-        algo.run();
+        await algo.run();
         break;
     default:
       break;
@@ -337,6 +348,7 @@ function _createEdgeCoords() : EdgeCoordinates[] {
             nodeOneY: graphMemberNode.location.y - nodeRadius / 2,
             nodeTwoX: graph.getNodeLocation(neighbor.node).x - nodeRadius / 2,
             nodeTwoY: graph.getNodeLocation(neighbor.node).y - nodeRadius / 2,
+            weight: neighbor.edge.weight,
             start: false
           })
         } else {
@@ -345,6 +357,7 @@ function _createEdgeCoords() : EdgeCoordinates[] {
             nodeTwoY: graphMemberNode.location.y + nodeRadius / 2,
             nodeOneX: graph.getNodeLocation(neighbor.node).x + nodeRadius / 2,
             nodeOneY: graph.getNodeLocation(neighbor.node).y + nodeRadius / 2,
+            weight: neighbor.edge.weight,
             start: true
           })
         }
@@ -358,6 +371,7 @@ function _createEdgeCoords() : EdgeCoordinates[] {
             nodeOneY: graphMemberNode.location.y - nodeRadius / 2,
             nodeTwoX: graph.getNodeLocation(neighbor.node).x + nodeRadius / 2,
             nodeTwoY: graph.getNodeLocation(neighbor.node).y - nodeRadius / 2,
+            weight: neighbor.edge.weight,
             start: false
           })
         } else {
@@ -366,6 +380,7 @@ function _createEdgeCoords() : EdgeCoordinates[] {
             nodeTwoY: graphMemberNode.location.y + nodeRadius / 2,
             nodeOneX: graph.getNodeLocation(neighbor.node).x - nodeRadius / 2,
             nodeOneY: graph.getNodeLocation(neighbor.node).y + nodeRadius / 2,
+            weight: neighbor.edge.weight,
             start: true
           })
         }
@@ -375,4 +390,3 @@ function _createEdgeCoords() : EdgeCoordinates[] {
   }
   return edgeCoords;
 }
-
